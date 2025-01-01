@@ -46,7 +46,7 @@ function (dojo, declare) {
         
         setup: function( gamedatas )
         {
-            console.log( "Starting game setup" );
+            console.log( "Let's start game setup" );
 
             // Example to add a div on the game area
             document.getElementById('game_play_area').insertAdjacentHTML('beforeend', `
