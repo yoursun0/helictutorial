@@ -91,7 +91,7 @@ function (dojo, declare) {
         //
         onEnteringState: function( stateName, args )
         {
-            console.log( 'Entering state: '+stateName, args );
+            console.log( 'Entering state: '+stateName );
             
             switch( stateName )
             {
@@ -107,7 +107,8 @@ function (dojo, declare) {
            */
            
            
-            case 'dummy':
+            case 'playerTurn':
+                this.updatePossibleMoves( args.args.possibleMoves );
                 break;
             }
         },
@@ -184,7 +185,23 @@ function (dojo, declare) {
             const anim = this.slideToObject( `disc_${x}${y}`, 'square_'+x+'_'+y );
             await this.bgaPlayDojoAnimation(anim);
         },
-
+        
+        updatePossibleMoves: function( possibleMoves )
+        {
+            // Remove current possible moves
+            document.querySelectorAll('.possibleMove').forEach(div => div.classList.remove('possibleMove'));
+        
+            for( var x in possibleMoves )
+            {
+                for( var y in possibleMoves[ x ] )
+                {
+                    // x,y is a possible move
+                    document.getElementById(`square_${x}_${y}`).classList.add('possibleMove');
+                }            
+            }
+                        
+            this.addTooltipToClass( 'possibleMove', '', _('Place a disc here') );
+        },
         ///////////////////////////////////////////////////
         //// Player's action
         

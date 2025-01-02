@@ -89,3 +89,9 @@
 }
 .disc[data-color="ffffff"] { background-position-x: 0%; }
 .disc[data-color="000000"] { background-position-x: 100%; }
+
+.possibleMove {
+    background-color: white;
+    opacity: 0.2; 
+    cursor: pointer;  
+}
