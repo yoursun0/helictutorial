@@ -1,4 +1,5 @@
 <?php
+
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
@@ -14,6 +15,7 @@
  *
  * In this PHP file, you are going to defines the rules of the game.
  */
+
 declare(strict_types=1);
 
 namespace Bga\Games\HelicTutorial;
@@ -43,7 +45,7 @@ class Game extends \Table
             "my_second_global_variable" => 11,
             "my_first_game_variant" => 100,
             "my_second_game_variant" => 101,
-        ]);        
+        ]);
 
         self::$CARD_TYPES = [
             1 => [
@@ -146,13 +148,14 @@ class Game extends \Table
      *
      * The action method of state `nextPlayer` is called everytime the current game state is set to `nextPlayer`.
      */
-    public function stNextPlayer(): void {
+    public function stNextPlayer(): void
+    {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
 
         // Give some extra time to the active player when he completed an action
         $this->giveExtraTime($player_id);
-        
+
         $this->activeNextPlayer();
 
         // Go to another gamestate
@@ -173,21 +176,21 @@ class Game extends \Table
      */
     public function upgradeTableDb($from_version)
     {
-//       if ($from_version <= 1404301345)
-//       {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "ALTER TABLE DBPREFIX_xxxxxxx ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
-//
-//       if ($from_version <= 1405061421)
-//       {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
+        //       if ($from_version <= 1404301345)
+        //       {
+        //            // ! important ! Use DBPREFIX_<table_name> for all tables
+        //
+        //            $sql = "ALTER TABLE DBPREFIX_xxxxxxx ....";
+        //            $this->applyDbUpgradeToAllDB( $sql );
+        //       }
+        //
+        //       if ($from_version <= 1405061421)
+        //       {
+        //            // ! important ! Use DBPREFIX_<table_name> for all tables
+        //
+        //            $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
+        //            $this->applyDbUpgradeToAllDB( $sql );
+        //       }
     }
 
     /*
@@ -208,10 +211,14 @@ class Game extends \Table
         // Get information about players.
         // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
         $result["players"] = $this->getCollectionFromDb(
-            "SELECT `player_id` `id`, `player_score` `score` FROM `player`"
+            "SELECT `player_id` `id`, `player_score` `score`, `player_color` `color` FROM `player`"
         );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
+        // Get reversi board token
+        $result['board'] = self::getObjectListFromDB("SELECT board_x x, board_y y, board_player player
+            FROM board
+            WHERE board_player IS NOT NULL");
 
         return $result;
     }
@@ -235,7 +242,7 @@ class Game extends \Table
         // Set the colors of the players with HTML color code. The default below is red/green/blue/orange/brown. The
         // number of colors defined here must correspond to the maximum number of players allowed for the gams.
         $gameinfos = $this->getGameinfos();
-        $default_colors = array( "ffffff", "000000" );
+        $default_colors = array("000000", "ffffff");
 
         foreach ($players as $player_id => $player) {
             // Now you can access both $player_id and $player array
@@ -259,7 +266,6 @@ class Game extends \Table
             )
         );
 
-        $this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
         $this->reloadPlayersBasicInfos();
 
         // Init global values with their initial values.
@@ -276,6 +282,24 @@ class Game extends \Table
         // $this->initStat("player", "player_teststat1", 0);
 
         // TODO: Setup the initial game situation here.
+
+        // Init the board
+        $sql = "INSERT INTO board (board_x,board_y,board_player) VALUES ";
+        $sql_values = array();
+        list($blackplayer_id, $whiteplayer_id) = array_keys($players);
+        for ($x = 1; $x <= 8; $x++) {
+            for ($y = 1; $y <= 8; $y++) {
+                $token_value = "NULL";
+                if (($x == 4 && $y == 4) || ($x == 5 && $y == 5))  // Initial positions of white player
+                    $token_value = "'$whiteplayer_id'";
+                else if (($x == 4 && $y == 5) || ($x == 5 && $y == 4))  // Initial positions of black player
+                    $token_value = "'$blackplayer_id'";
+
+                $sql_values[] = "('$x','$y',$token_value)";
+            }
+        }
+        $sql .= implode(',', $sql_values);
+        $this->DbQuery($sql);
 
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();
@@ -303,11 +327,10 @@ class Game extends \Table
 
         if ($state["type"] === "activeplayer") {
             switch ($state_name) {
-                default:
-                {
-                    $this->gamestate->nextState("zombiePass");
-                    break;
-                }
+                default: {
+                        $this->gamestate->nextState("zombiePass");
+                        break;
+                    }
             }
 
             return;
