@@ -50,7 +50,10 @@ function (dojo, declare) {
 
             // Example to add a div on the game area
             document.getElementById('game_play_area').insertAdjacentHTML('beforeend', `
-                <div id="board"></div>
+                <div id="board">
+                    <div id="discs">
+                    </div>
+                </div>
             `);
             
             // TODO: Set up your game interface here, according to "gamedatas"
@@ -65,6 +68,8 @@ function (dojo, declare) {
                     board.insertAdjacentHTML(`afterbegin`, `<div id="square_${x}_${y}" class="square" style="left: ${left}px; top: ${top}px;"></div>`);
                 }
             }
+
+            this.addDiscOnBoard( 2, 2, this.player_id );
  
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -163,6 +168,17 @@ function (dojo, declare) {
         
         */
 
+        addDiscOnBoard: async function( x, y, player )
+        {
+            const color = this.gamedatas.players[ player ].color;
+                
+            document.getElementById('discs').insertAdjacentHTML('beforeend', `<div class="disc" data-color="${color}" id="disc_${x}${y}"></div>`);
+                
+            this.placeOnObject( `disc_${x}${y}`, 'overall_player_board_'+player );
+                
+            const anim = this.slideToObject( `disc_${x}${y}`, 'square_'+x+'_'+y );
+            await this.bgaPlayDojoAnimation(anim);
+        },
 
         ///////////////////////////////////////////////////
         //// Player's action

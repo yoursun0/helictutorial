@@ -78,5 +78,14 @@
     width: 62px;
     height: 62px;
     position: absolute;
-    background-color: red;
 }
+
+.disc {
+    width: 56px;
+    height: 56px;
+    position: absolute;
+    background-image: url('img/tokens.png');
+    background-size: auto 100%;
+}
+.disc[data-color="ffffff"] { background-position-x: 0%; }
+.disc[data-color="000000"] { background-position-x: 100%; }
